@@ -1,0 +1,80 @@
+#!/usr/bin/python3
+# -*- coding:utf-8 -*
+#
+# Copyright (C) 2018 Antoine Tenart <antoine.tenart@bootlin.com>
+#
+# This file is licensed under the terms of the GNU General Public
+# License version 2. This program is licensed "as is" without any
+# warranty of any kind, whether express or implied.
+
+'''Backport git commits on tracked files from a branch to the local one
+
+Usage:
+  backport-commits [-c <cfg>] [--apply] [-f] <branch>
+
+Options:
+  -h            Displays this help.
+  -c <cfg>      Configuration file (holds the tracked files list [Default: ./tracked.txt].
+  --apply       Apply the commits found on the current branch (cherry-pick).
+  -f            Continue cherry-picking commits on failure.
+'''
+
+from collections import OrderedDict
+from docopt import docopt
+import sys
+import subprocess
+
+class Branch:
+    def __init__(self, branch, tracked):
+        self.commits = OrderedDict()
+
+        git = ['git', 'log', '--reverse', '--format=oneline', branch]
+        command = git + tracked
+
+        result = subprocess.check_output(command, stderr=subprocess.STDOUT).decode().split('\n')
+        for line in result:
+            h = line.split(' ')[0]
+            msg = ' '.join(line.split(' ')[1:])
+            self.commits[h] = msg
+
+def current_branch():
+    command = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
+    return subprocess.check_output(command).decode().strip()
+
+def cherry_pick(commit):
+    command = ['git', 'cherry-pick', commit]
+    result = subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if result.returncode:
+        command = ['git', 'cherry-pick', '--abort']
+        subprocess.run(command, stderr=subprocess.DEVNULL)
+
+    return result.returncode
+
+def parse_config(path):
+    with open(path) as f:
+        lines = f.read().splitlines()
+    return [line for line in lines if not line.startswith('#')]
+
+if __name__ == '__main__':
+    args = docopt(__doc__)
+
+    tracked = parse_config(args['-c'])
+
+    f = Branch(args['<branch>'], tracked)
+    t = Branch(current_branch(), tracked)
+
+    to_backport = OrderedDict()
+    for k,v in f.commits.items():
+        if v not in t.commits.values() and not v.startswith('Merge'):
+            to_backport[k] = v
+
+    for k,v in to_backport.items():
+        if args['--apply']:
+            ret = cherry_pick(k)
+            if ret:
+                print("Could not apply %s %s" % (k, v))
+                if not args['-f']:
+                    sys.exit(1)
+                continue
+
+        print("%s %s" % (k, v))

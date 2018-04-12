@@ -1,0 +1,4 @@
+# Tracked files example
+/path/to/file/one.c
+/path/matching/files*
+/path/to/a/directory/
