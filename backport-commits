@@ -10,13 +10,14 @@
 '''Backport git commits on tracked files from a branch to the local one
 
 Usage:
-  backport-commits [-c <cfg>] [--apply] [-f] <branch>
+  backport-commits [-c <cfg>] [--apply] [-f] [--cmd=<command>] <branch>
 
 Options:
   -h                Displays this help.
   -c <cfg>          Configuration file [Default: ./backport.cfg].
   --apply           Apply the commits found on the current branch (cherry-pick).
   -f                Continue cherry-picking commits on failure.
+  --cmd=<command>   Command to run between each cherry-pick.
 '''
 
 from collections import OrderedDict
@@ -102,3 +103,8 @@ if __name__ == '__main__':
                 continue
 
         print("%s %s" % (k, v))
+
+        if args['--cmd']:
+            result = subprocess.run(args['--cmd'], shell=True)
+            if result.returncode and not args['-f']:
+                sys.exit(result.returncode)
