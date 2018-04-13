@@ -93,6 +93,8 @@ if __name__ == '__main__':
             continue
         to_backport[k] = v
 
+    i = 1
+    tot = len(to_backport)
     for k,v in to_backport.items():
         if args['--apply']:
             ret = cherry_pick(k)
@@ -102,7 +104,8 @@ if __name__ == '__main__':
                     sys.exit(1)
                 continue
 
-        print("%s %s" % (k, v))
+        print("[%d/%d] %s %s" % (i, tot, k, v))
+        i += 1
 
         if args['--apply'] and args['--cmd']:
             result = subprocess.run(args['--cmd'], shell=True)
