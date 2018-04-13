@@ -1,4 +1,4 @@
-# Backport commits
+# Backport
 
 Backport (cherry-pick) commits made on a list of tracked files, from a given
 branch to the local one. Or just display the list.
@@ -6,16 +6,16 @@ branch to the local one. Or just display the list.
 ## Usage
 
 ```
-$ backport-commits -c ../blacklist.cfg branch-to-backport-from
-$ backport-commits branch-to-backport-from --apply
-$ backport-commits branch-to-backport-from --apply -f
-$ backport-commits branch-to-backport-from --apply --cmd="make -j6"
+$ backport -c ../blacklist.cfg branch-to-backport-from
+$ backport branch-to-backport-from --apply
+$ backport branch-to-backport-from --apply -f
+$ backport branch-to-backport-from --apply --cmd="make -j6"
 ```
 
 ## Help
 
 ```
-$ backport-commits -h
+$ backport -h
 ```
 
 ## License
