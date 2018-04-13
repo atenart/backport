@@ -13,7 +13,7 @@ Usage:
   backport-commits [-c <cfg>] [--apply] [-f] [--cmd=<command>] <branch>
 
 Options:
-  -h                Displays this help.
+  -h                Display this help.
   -c <cfg>          Configuration file [Default: ./backport.cfg].
   --apply           Apply the commits found on the current branch (cherry-pick).
   -f                Continue cherry-picking commits on failure.
