@@ -1,7 +1,11 @@
 # Backport
 
 Backport (cherry-pick) commits made on a list of tracked files, from a given
-branch to the local one. Or just display the list.
+branch to the local one. Or just display the list. This tool is used to maintain
+stable branches with additional newer features coming from a subset of files.
+
+Example: a Linux branch based on a stable version, onto which you want to apply
+newer changes for the drivers and architecture code of a particular platform.
 
 ## Usage
 
