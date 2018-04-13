@@ -6,9 +6,10 @@ branch to the local one. Or just display the list.
 ## Usage
 
 ```
-$ backport-commits -c ./tracked.txt branch-to-backport-from
-$ backport-commits --apply branch-to-backport-from
-$ backport-commits --apply -f branch-to-backport-from
+$ backport-commits -c ../blacklist.cfg branch-to-backport-from
+$ backport-commits branch-to-backport-from --apply
+$ backport-commits branch-to-backport-from --apply -f
+$ backport-commits branch-to-backport-from --apply --cmd="make -j6"
 ```
 
 ## Help
