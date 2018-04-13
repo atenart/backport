@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
         print("%s %s" % (k, v))
 
-        if args['--cmd']:
+        if args['--apply'] and args['--cmd']:
             result = subprocess.run(args['--cmd'], shell=True)
             if result.returncode and not args['-f']:
                 sys.exit(result.returncode)
