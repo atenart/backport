@@ -13,10 +13,10 @@ Usage:
   backport-commits [-c <cfg>] [--apply] [-f] <branch>
 
 Options:
-  -h            Displays this help.
-  -c <cfg>      Configuration file (holds the tracked files list [Default: ./tracked.txt].
-  --apply       Apply the commits found on the current branch (cherry-pick).
-  -f            Continue cherry-picking commits on failure.
+  -h                Displays this help.
+  -c <cfg>          Configuration file [Default: ./backport.cfg].
+  --apply           Apply the commits found on the current branch (cherry-pick).
+  -f                Continue cherry-picking commits on failure.
 '''
 
 from collections import OrderedDict
@@ -37,6 +37,30 @@ class Branch:
             msg = ' '.join(line.split(' ')[1:])
             self.commits[h] = msg
 
+class Config:
+    def __init__(self, path):
+        self.config = OrderedDict()
+
+        with open(path) as f:
+            lines = f.read().splitlines()
+        self.parse([line.strip() for line in lines if not line.startswith('#')])
+
+    def parse(self, lst):
+        key = 'default'
+        for line in lst:
+            if line.startswith('[') and line.endswith(']'):
+                key = line[1:-1]
+                self.config[key] = []
+                continue
+            if len(line):
+                self.config[key].append(line)
+
+    def tracked_files(self):
+        return self.config['tracked-files']
+
+    def blacklisted_commits(self):
+        return self.config['blacklisted-commits']
+
 def current_branch():
     command = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
     return subprocess.check_output(command).decode().strip()
@@ -50,23 +74,23 @@ def cherry_pick(commit):
 
     return result.returncode
 
-def parse_config(path):
-    with open(path) as f:
-        lines = f.read().splitlines()
-    return [line for line in lines if not line.startswith('#')]
-
 if __name__ == '__main__':
     args = docopt(__doc__)
 
-    tracked = parse_config(args['-c'])
+    config = Config(args['-c'])
+    tracked = config.tracked_files()
+    blacklist = config.blacklisted_commits()
 
     f = Branch(args['<branch>'], tracked)
     t = Branch(current_branch(), tracked)
 
     to_backport = OrderedDict()
     for k,v in f.commits.items():
-        if v not in t.commits.values() and not v.startswith('Merge'):
-            to_backport[k] = v
+        if v in t.commits.values() or v.startswith('Merge'):
+            continue
+        if v in blacklist:
+            continue
+        to_backport[k] = v
 
     for k,v in to_backport.items():
         if args['--apply']:
