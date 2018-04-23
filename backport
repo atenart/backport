@@ -29,7 +29,7 @@ class Branch:
     def __init__(self, branch, tracked):
         self.commits = OrderedDict()
 
-        git = ['git', 'log', '--reverse', '--format=oneline', branch]
+        git = ['git', 'log', '--reverse', '--format=oneline', branch, '--']
         command = git + tracked
 
         result = subprocess.check_output(command, stderr=subprocess.STDOUT).decode().split('\n')
